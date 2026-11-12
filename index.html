@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aurora Badminton Manager</title>
+    <!-- PWA Manifest to enforce standalone borderless app window mode -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Aurora Badminton Manager","short_name":"BadmintonApp","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#022335"}'>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --text-color: #f1f5f9;
+            --primary: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+
+            /* Skill Tier Colors */
+            --skill-beginner: #38bdf8;
+            --skill-low-intermediate: #34d399;
+            --skill-intermediate: #facc15;
+            --skill-upper: #fb923c;
+            --skill-advanced: #f43f5e;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            
+            /* Aurora Borealis Animated Background */
+            background: linear-gradient(135deg, #022335, #064e3b, #311042, #0f172a);
+            background-size: 400% 400%;
+            animation: auroraAnimation 15s ease infinite;
+        }
+
+        @keyframes auroraAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 2.2rem;
+            background: linear-gradient(to right, #38bdf8, #4ade80, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: #cbd5e1;
+            margin: 0;
+        }
+
+        /* Tab Navigation */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #cbd5e1;
+            border: 1px solid var(--glass-border);
+            padding: 10px 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: rgba(56, 189, 248, 0.3);
+            border-color: #38bdf8;
+            color: white;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .tab-content.full-width {
+            display: none;
+            grid-template-columns: 1fr;
+        }
+        .tab-content.full-width.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Liquid Glass Card Style */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--glass-shadow);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.15rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #f8fafc;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        input[type="text"], input[type="number"], select {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: rgba(15, 23, 42, 0.4);
+            color: #fff;
+            outline: none;
+            backdrop-filter: blur(4px);
+        }
+
+        select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        input:focus, select:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
+
+        button {
+            background: rgba(56, 189, 248, 0.25);
+            backdrop-filter: blur(6px);
+            color: white;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: rgba(56, 189, 248, 0.45);
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        button.danger {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        button.danger:hover {
+            background: rgba(239, 68, 68, 0.45);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+        }
+
+        button.success {
+            background: rgba(34, 197, 94, 0.25);
+            border-color: rgba(34, 197, 94, 0.4);
+        }
+        button.success:hover {
+            background: rgba(34, 197, 94, 0.45);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+        }
+
+        button.warning {
+            background: rgba(245, 158, 11, 0.25);
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+        button.warning:hover {
+            background: rgba(245, 158, 11, 0.45);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Lists & Scrollbars */
+        .scroll-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .scroll-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scroll-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .scroll-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            backdrop-filter: blur(4px);
+        }
+
+        /* Courts Grid */
+        .courts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .court-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .court-header {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .court-players {
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            min-height: 80px;
+            font-size: 0.95rem;
+        }
+
+        .court-player-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .court-player-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Skill Level Badges */
+        .skill-badge {
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .skill-Beginner { background: rgba(56, 189, 248, 0.2); color: var(--skill-beginner); border-color: rgba(56, 189, 248, 0.4); }
+        .skill-Low-Intermediate { background: rgba(52, 211, 153, 0.2); color: var(--skill-low-intermediate); border-color: rgba(52, 211, 153, 0.4); }
+        .skill-Intermediate { background: rgba(250, 204, 21, 0.2); color: var(--skill-intermediate); border-color: rgba(250, 204, 21, 0.4); }
+        .skill-Upper-Intermediate { background: rgba(251, 146, 60, 0.2); color: var(--skill-upper); border-color: rgba(251, 146, 60, 0.4); }
+        .skill-Advanced { background: rgba(244, 63, 94, 0.2); color: var(--skill-advanced); border-color: rgba(244, 63, 94, 0.4); }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: normal;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Liquid Glass Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 35, 53, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-card h3 {
+            margin-top: 0;
+            color: #f8fafc;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🏸 Badminton Queue Manager</h1>
+        <p>Novice Grounds | Fair Play</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('manager')">Court & Queue Manager</button>
+        <button class="tab-btn" onclick="switchTab('roster')">All Players Waiting (<span id="tab-roster-count">0</span>)</button>
+    </div>
+
+    <!-- TAB 1: MANAGER -->
+    <div id="tab-manager" class="tab-content active">
+        <div>
+            <!-- Add Player & Rank -->
+            <div class="card">
+                <h2>Add Player & Skill</h2>
+                <div class="form-group">
+                    <input type="text" id="player-name" placeholder="Player name..." onkeypress="handlePlayerKey(event)">
+                </div>
+                <div class="form-group">
+                    <select id="player-skill">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Low Intermediate">Low Intermediate</option>
+                        <option value="Intermediate" selected>Intermediate</option>
+                        <option value="Upper Intermediate">Upper Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                    <button onclick="addPlayer()">Add</button>
+                </div>
+            </div>
+
+            <!-- Court Configuration -->
+            <div class="card">
+                <h2>Courts Configuration</h2>
+                <div class="form-group">
+                    <input type="number" id="num-courts" value="2" min="1" max="10">
+                    <button onclick="updateCourts()">Set Courts</button>
+                </div>
+            </div>
+
+            <!-- Queue Section -->
+            <div class="card">
+                <h2>
+                    Active FIFO Queue 
+                    <span id="queue-count" class="badge">0 players</span>
+                </h2>
+                <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+                    <button class="success" onclick="autoAssign()" style="flex:1;">Auto-Assign Next 4</button>
+                    <button class="danger" onclick="clearQueue()" style="font-size: 0.85rem;">Clear</button>
+                </div>
+                <ul id="queue-list" class="scroll-list"></ul>
+            </div>
+        </div>
+
+        <!-- Right Column: Courts Grid -->
+        <div>
+            <div class="card">
+                <h2>Active Courts Status</h2>
+                <div id="courts-grid" class="courts-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: WAITING LIST -->
+    <div id="tab-roster" class="tab-content full-width">
+        <div class="card">
+            <h2>
+                Complete Roster & Waiting List
+                <span id="roster-count-badge" class="badge">0 total</span>
+            </h2>
+            <p style="color: #cbd5e1; font-size: 0.9rem;">View all checked-in players with their skill tier. Filter and manually assign them to courts.</p>
+            
+            <div style="margin-bottom: 15px; display: flex; gap: 10px; max-width: 400px;">
+                <input type="text" id="roster-search" placeholder="Search player..." oninput="renderRoster()">
+            </div>
+
+            <ul id="roster-list" class="scroll-list" style="max-height: 500px;"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Liquid Glass Modal for Manual Assignment -->
+<div id="assign-modal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>Assign Player to Court</h3>
+        <p id="modal-player-info" style="color: #cbd5e1; margin-bottom: 15px;"></p>
+        <div class="form-group" style="flex-direction: column;">
+            <label style="font-size: 0.85rem; color: #94a3b8;">Select Target Court:</label>
+            <select id="modal-court-select"></select>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="success" style="flex:1;" onclick="confirmManualAssignment()">Confirm</button>
+            <button class="danger" style="flex:1;" onclick="closeAssignModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let playersQueue = []; 
+    let courts = [
+        { id: 1, name: "Court 1", players: [] },
+        { id: 2, name: "Court 2", players: [] }
+    ];
+    let selectedPlayerIndex = null;
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+        if (tabName === 'manager') {
+            document.querySelector('.tabs button:nth-child(1)').classList.add('active');
+            document.getElementById('tab-manager').classList.add('active');
+        } else {
+            document.querySelector('.tabs button:nth-child(2)').classList.add('active');
+            document.getElementById('tab-roster').classList.add('active');
+            renderRoster();
+        }
+    }
+
+    function addPlayer() {
+        const input = document.getElementById('player-name');
+        const skillSelect = document.getElementById('player-skill');
+        const name = input.value.trim();
+        if (name === "") return;
+
+        playersQueue.push({
+            name: name,
+            skill: skillSelect.value
+        });
+        input.value = "";
+        updateAllViews();
+    }
+
+    function handlePlayerKey(event) {
+        if (event.key === 'Enter') addPlayer();
+    }
+
+    function removeFromQueue(index) {
+        playersQueue.splice(index, 1);
+        updateAllViews();
+    }
+
+    function clearQueue() {
+        if (confirm("Are you sure you want to clear the entire queue?")) {
+            playersQueue = [];
+            updateAllViews();
+        }
+    }
+
+    function updateCourts() {
+        const numInput = document.getElementById('num-courts');
+        const count = parseInt(numInput.value);
+        if (isNaN(count) || count < 1) return;
+
+        let newCourts = [];
+        for (let i = 1; i <= count; i++) {
+            const existing = courts.find(c => c.id === i);
+            newCourts.push(existing || { id: i, name: `Court ${i}`, players: [] });
+        }
+        courts = newCourts;
+        renderCourts();
+    }
+
+    function autoAssign() {
+        const emptyCourt = courts.find(c => c.players.length === 0);
+        if (!emptyCourt) {
+            alert("All courts are currently occupied!");
+            return;
+        }
+        if (playersQueue.length < 4) {
+            alert("You need at least 4 players in the queue to auto-assign a match.");
+            return;
+        }
+
+        emptyCourt.players = playersQueue.splice(0, 4);
+        updateAllViews();
+    }
+
+    function removePlayerFromCourt(courtId, playerIndex, sendBackToQueue = true) {
+        const court = courts.find(c => c.id === courtId);
+        if (!court) return;
+
+        const removedPlayer = court.players.splice(playerIndex, 1)[0];
+        if (sendBackToQueue) {
+            playersQueue.unshift(removedPlayer);
+        }
+        updateAllViews();
+    }
+
+    function finishMatch(courtId) {
+        const court = courts.find(c => c.id === courtId);
+        if (court && court.players.length > 0) {
+            court.players.forEach(player => {
+                playersQueue.push(player);
+            });
+            court.players = [];
+            updateAllViews();
+        }
+    }
+
+    function openAssignModal(playerIndex) {
+        if (courts.every(c => c.players.length >= 4)) {
+            alert("All courts are currently full (4 players max per court).");
+            return;
+        }
+
+        selectedPlayerIndex = playerIndex;
+        const playerObj = playersQueue[playerIndex];
+        
+        document.getElementById('modal-player-info').innerHTML = `Assigning <strong>${escapeHtml(playerObj.name)}</strong> (${playerObj.skill})`;
+
+        const selectEl = document.getElementById('modal-court-select');
+        selectEl.innerHTML = '';
+        
+        courts.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.name} (${c.players.length}/4 players)`;
+            if (c.players.length >= 4) opt.disabled = true;
+            selectEl.appendChild(opt);
+        });
+
+        document.getElementById('assign-modal').classList.add('active');
+    }
+
+    function closeAssignModal() {
+        document.getElementById('assign-modal').classList.remove('active');
+        selectedPlayerIndex = null;
+    }
+
+    function confirmManualAssignment() {
+        if (selectedPlayerIndex === null) return;
+        
+        const targetCourtId = parseInt(document.getElementById('modal-court-select').value);
+        const court = courts.find(c => c.id === targetCourtId);
+
+        if (!court || court.players.length >= 4) {
+            alert("Selected court is full or invalid.");
+            return;
+        }
+
+        const playerObj = playersQueue.splice(selectedPlayerIndex, 1)[0];
+        court.players.push(playerObj);
+
+        closeAssignModal();
+        updateAllViews();
+    }
+
+    function getSkillClass(skill) {
+        return 'skill-' + skill.replace(/\s+/g, '-');
+    }
+
+    function renderQueue() {
+        const listEl = document.getElementById('queue-list');
+        const countEl = document.getElementById('queue-count');
+        
+        listEl.innerHTML = '';
+        countEl.textContent = `${playersQueue.length} player${playersQueue.length === 1 ? '' : 's'}`;
+        document.getElementById('tab-roster-count').textContent = playersQueue.length;
+
+        if (playersQueue.length === 0) {
+            listEl.innerHTML = '<li style="justify-content: center; color: #94a3b8; background: transparent; border: none;">Queue is empty</li>';
+            return;
+        }
+
+        playersQueue.forEach((player, index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.85rem; opacity: 0.7;">#${index + 1}</span>
+                    <strong>${escapeHtml(player.name)}</strong>
+                    <span class="skill-badge ${getSkillClass(player.skill)}">${player.skill}</span>
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <button class="warning" style="padding: 4px 8px; font-size: 0.75rem;" onclick="openAssignModal(${index})">Assign</button>
+                    <button class="danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="removeFromQueue(${index})">X</button>
+                </div>
+            `;
+            listEl.appendChild(li);
+        });
+    }
+
+    function renderCourts() {
+        const gridEl = document.getElementById('courts-grid');
+        gridEl.innerHTML = '';
+
+        courts.forEach(court => {
+            const courtDiv = document.createElement('div');
+            courtDiv.className = 'court-card';
+            
+            let playersHtml = '';
+            if (court.players.length === 0) {
+                playersHtml = '<p style="color: #94a3b8; margin: 5px 0; font-style: italic;">Court is empty</p>';
+            } else {
+                playersHtml = '<div style="display:flex; flex-direction:column; gap:6px;">' + 
+                    court.players.map((p, pIdx) => `
+                        <div class="court-player-item">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size:0.9rem;">• ${escapeHtml(p.name)}</span>
+                                <span class="skill-badge ${getSkillClass(p.skill)}">${p.skill}</span>
+                            </div>
+                            <button class="danger" style="padding: 2px 6px; font-size: 0.7rem;" onclick="removePlayerFromCourt(${court.id}, ${pIdx}, true)">Remove</button>
+                        </div>
+                    `).join('') + '</div>';
+            }
+
+            courtDiv.innerHTML = `
+                <div>
+                    <div class="court-header">
+                        <span>${court.name}</span>
+                        <span class="badge" style="background: ${court.players.length > 0 ? 'rgba(34, 197, 94, 0.25)' : 'rgba(255,255,255,0.1)'}; color: ${court.players.length > 0 ? '#4ade80' : '#cbd5e1'}">
+                            ${court.players.length > 0 ? `${court.players.length}/4 In Play` : 'Available'}
+                        </span>
+                    </div>
+                    <div class="court-players">
+                        <strong style="font-size:0.85rem; color:#94a3b8; display:block; margin-bottom:4px;">Assigned Players:</strong>
+                        ${playersHtml}
+                    </div>
+                </div>
+                <div>
+                    ${court.players.length > 0 ? 
+                        `<button class="danger" style="width: 100%; margin-top:5px;" onclick="finishMatch(${court.id})">Finish & Return to Queue</button>` : 
+                        `<button class="success" style="width: 100%; margin-top:5px;" onclick="autoAssignSpecific(${court.id})">Auto-Assign Next 4</button>`
+                    }
+                </div>
+            `;
+            gridEl.appendChild(courtDiv);
+        });
+    }
+
+    function autoAssignSpecific(courtId) {
+        const court = courts.find(c => c.id === courtId);
+        if (playersQueue.length < 4) {
+            alert("Not enough players in the queue (minimum 4 required).");
+            return;
+        }
+        court.players = playersQueue.splice(0, 4);
+        updateAllViews();
+    }
+
+    function renderRoster() {
+        const listEl = document.getElementById('roster-list');
+        const filterText = document.getElementById('roster-search').value.toLowerCase();
+        
+        listEl.innerHTML = '';
+        document.getElementById('roster-count-badge').textContent = `${playersQueue.length} waiting`;
+
+        const filtered = playersQueue
+            .map((player, index) => ({ player, index }))
+            .filter(item => item.player.name.toLowerCase().includes(filterText));
+
+        if (filtered.length === 0) {
+            listEl.innerHTML = '<li style="justify-content: center; color: #94a3b8; background: transparent; border: none;">No players found</li>';
+            return;
+        }
+
+        filtered.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.85rem; opacity: 0.7;">Pos #${item.index + 1}</span>
+                    <strong>${escapeHtml(item.player.name)}</strong>
+                    <span class="skill-badge ${getSkillClass(item.player.skill)}">${item.player.skill}</span>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="warning" style="padding: 4px 10px; font-size: 0.8rem;" onclick="openAssignModal(${item.index})">Assign to Court</button>
+                    <button class="danger" style="padding: 4px 10px; font-size: 0.8rem;" onclick="removeFromQueue(${item.index})">Remove</button>
+                </div>
+            `;
+            listEl.appendChild(li);
+        });
+    }
+
+    function updateAllViews() {
+        renderQueue();
+        renderCourts();
+        if (document.getElementById('tab-roster').classList.contains('active')) {
+            renderRoster();
+        }
+    }
+
+    function escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    updateAllViews();
+</script>
+
+</body>
+</html>
